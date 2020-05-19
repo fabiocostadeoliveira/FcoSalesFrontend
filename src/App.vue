@@ -1,28 +1,42 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+	<div id="app">
+		
+		<md-toolbar id="menuBar" class="md-primary">
+			<span id="labelProjectManager" class="md-title">Gerenciador de Vendas</span>  
+			<md-button 
+				class="md-icon-button" 
+				to="/">
+				<md-icon id="iconHome">home</md-icon>
+			</md-button>
+		</md-toolbar>
+
+		<md-content>
+			<router-view></router-view>        
+		</md-content>
+	</div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
+	name: 'App',
+	components: {
+		
+	},
+
+	methods:{
+
+		
+
+	}
+
+	
+
+
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
 </style>
