@@ -10,6 +10,17 @@
 			</md-button>
 		</md-toolbar>
 
+
+		<md-snackbar 
+			:md-position="snackBarConfiguration.position" 
+			:md-duration="snackBarConfiguration.duration" 
+			:md-active.sync="isSnackbarVisibleLocal" 
+			md-persistent>
+			
+			<span>{{ messageSnackBar }}</span>
+			
+		</md-snackbar>
+
 		<md-content>
 			<router-view></router-view>        
 		</md-content>
@@ -19,16 +30,31 @@
 <script>
 
 
+import {mapGetters} from 'vuex'
+
 export default {
 	name: 'App',
 	components: {
 		
 	},
 
+	data: () => ({
+		isSnackbarVisibleLocal: false,
+		snackBarConfiguration: {
+			position: 'center',
+			duration: 5000
+		}
+	}),
+
 	methods:{
 
 		
 
+	},
+
+	computed:{
+
+		...mapGetters(['isSnackbarVisible', 'messageSnackBar']),
 	}
 
 	

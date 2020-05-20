@@ -1,9 +1,7 @@
 <template>
     <div>
-
-
         <md-dialog 
-            :md-active.sync="show"
+            :md-active.sync="value"
             :md-click-outside-to-close="false"
             :md-close-on-esc="false">
 
@@ -12,10 +10,10 @@
             <md-dialog-content class="modalContent">
 
                 <md-autocomplete 
-                    v-model="itemSelecionado" 
+                    v-model="produtoSelecionado" 
                     :md-options="filtroProdutos"
                     >
-                    <label>Country</label>
+                    <label>Produto</label>
 
                     <template slot="md-autocomplete-item" slot-scope="{ item }">                        
                         <md-highlight-text :md-term="item.nome">{{ item }}</md-highlight-text>
@@ -26,21 +24,24 @@
                 <md-field>
                     <label>Quantidade</label>
                     <md-input 
-                        v-model="item.quantidade">
+                        type="number"
+                        v-model="quantidade">
                     </md-input>                    
                 </md-field>
 
                 <md-field>
                     <label>Preço</label>
-                    <md-input 
-                        v-model="item.preco">
+                    <md-input                         
+                        disabled
+                        :value="precoProduto | monetario">
                     </md-input>                    
                 </md-field>
 
                 <md-field>
                     <label>Total</label>
                     <md-input 
-                        v-model="item.total">
+                        disabled                        
+                        :value="valorTotalItem | monetario" >
                     </md-input>                    
                 </md-field>
 
@@ -52,19 +53,19 @@
                     @click="onCancelar">Cancelar</md-button>
                 
                 <md-button 
-                    :disabled="isDisabledSaveButtom"
+                    :disabled="addDesabilitado"
                     class="md-accent" 
                     @click="addItem">Add</md-button>
             </md-dialog-actions>
 
         </md-dialog>
-
-
-
     </div>
 </template>
 
 <script>
+
+import {mapMutations} from 'vuex'
+
 export default {
     name: 'ItemPedidoModal', 
     components: {
@@ -73,9 +74,9 @@ export default {
 
     props:{
         
-        show:{
+        value:{
             type: Boolean,
-            default: () => (false)
+            required: true
         },
 
         item:{
@@ -86,74 +87,54 @@ export default {
     },
 
     data: () =>({
-        
-        value: null,
-        itemSelecionado:null,
-        itens:[
-            {nome:'vassoura', id:1 },
-            {nome:'sabonete', id:2 },
-            {nome:'televisao', id:3},
-        ],
-        
-        colors: [
-        { name: 'Aqua', color: '#00ffff' },
-        { name: 'Aquamarine', color: '#7fffd4' },
-        { name: 'Azure', color: '#f0ffff' },
-        { name: 'Beige', color: '#f5f5dc' },
-        { name: 'Black', color: '#000000' },
-        { name: 'Blue', color: '#0000ff' },
-        { name: 'Brown', color: '#a52a2a' },
-        { name: 'Crimson', color: '#dc143c' },
-        { name: 'Cyan', color: '#00ffff' },
-        { name: 'Deep Pink', color: '#ff1493' },
-        { name: 'Dim Gray', color: '#696969' },
-        { name: 'Fuchsia', color: '#ff00ff' },
-        { name: 'Gold', color: '#ffd700' },
-        { name: 'Gray', color: '#808080' },
-        { name: 'Green', color: '#008000' },
-        { name: 'Green Yellow', color: '#adff2f' },
-        { name: 'Grey', color: '#808080' },
-        { name: 'Hotpink', color: '#ff69b4' },
-        { name: 'Indigo', color: '#4b0082' },
-        { name: 'Ivory', color: '#fffff0' },
-        { name: 'Khaki', color: '#f0e68c' },
-        { name: 'Lavender', color: '#e6e6fa' },
-        { name: 'Lime', color: '#00ff00' },
-        { name: 'Magenta', color: '#ff00ff' },
-        { name: 'Maroon', color: '#800000' },
-        { name: 'Navy', color: '#000080' },
-        { name: 'Olive', color: '#808000' },
-        { name: 'Orange', color: '#ffa500' },
-        { name: 'Orange Red', color: '#ff4500' },
-        { name: 'Pale Golden Rod', color: '#eee8aa' },
-        { name: 'Pale Green', color: '#98fb98' },
-        { name: 'Pink', color: '#ffc0cb' },
-        { name: 'Purple', color: '#800080' },
-        { name: 'Red', color: '#ff0000' },
-        { name: 'Royal Blue', color: '#4169e1' },
-        { name: 'Sea Green', color: '#2e8b57' },
-        { name: 'Silver', color: '#c0c0c0' },
-        { name: 'Sky Blue', color: '#87ceeb' },
-        { name: 'Slate Blue', color: '#6a5acd' },
-        { name: 'Slate Grey', color: '#708090' },
-        { name: 'Teal', color: '#008080' },
-        { name: 'Turquoise', color: '#40e0d0' },
-        { name: 'Violet', color: '#ee82ee' },
-        { name: 'White', color: '#ffffff' },
-        { name: 'Yellow', color: '#ffff00' }
-      ]
+        produtoSelecionado: null,
+        listaProdutos:[],
+        testeValor:0,
+        quantidade: 1
+
     }),
 
     methods:{
+        
+        ...mapMutations(['setMessageSnackBar']),
 
         addItem(){
 
+            this.updateItem()
+
+            this.$emit('input', false)
+
+            this.$emit('itemAdicionado')
+
+        },
+
+        updateItem(){
+
+            this.$set(this.item, 'produto', this.produtoSelecionado)
+
+            this.$set(this.item, 'quantidade', this.quantidade)
+
+            this.$set(this.item, 'preco', this.precoProduto)
+
+            this.$set(this.item, 'total', this.valorTotalItem)
         },
 
         onCancelar(){
-            this.show = false
-        }
+            this.$emit('input', false)
+        },
 
+        async carregaProdutos(){
+            try {
+                
+                let {data} = await this.$http.get('/produtos')
+
+                this.listaProdutos = data
+
+            } catch (error) {
+
+                this.setMessageSnackBar('Erro ao consultar produtos')
+            }
+        },
     },
 
     computed: {
@@ -162,33 +143,83 @@ export default {
             return true
         },
 
+        precoProduto(){
+            if (this.produtoSelecionado === null)
+                return null
+
+            let filterPreco = this.listaProdutos
+                .filter( (p) => p.id == this.produtoSelecionado.id)
+                .map( (p) => p.preco)
+
+            let preco = filterPreco[0] || null
+
+            return preco
+        },
+
+        valorTotalItem(){
+            
+            let preco = this.precoProduto || 0
+            let qtd = this.quantidade || 0
+
+            if (qtd === 0 || preco === 0)
+                return 0
+
+            return preco * qtd
+        },
+
+        addDesabilitado(){
+            return this.valorTotalItem > 0 ? false : true
+
+        },
+
         filtroProdutos(){
-            console.log('chama aqui')
-            return this.itens.map(x=>({
+            
+            return this.listaProdutos.map(x=>({
                         'id':x.id,
-                        'nome':x.nome,
-                        'toLowerCase':()=>x.nome.toLowerCase(),
-                        'toString':()=>x.nome
+                        'descricao':x.descricao,
+                        'toLowerCase':()=>x.descricao.toLowerCase(),
+                        'toString':()=>x.descricao
                         
                     }))
-
         }
-
-
     },
 
     watch:{
 
-        itemSelecionado(){
-            console.log('selecionou esse obj', this.itemSelecionado)
+        value(){
+            if (this.value === true)
+                this.carregaProdutos()
+        },
+
+        item:{
+            handler(val){
+                if (Object.keys(val)){
+                    this.produtoSelecionado = null
+                    this.quantidade = 1
+                }
+            },
+            deep: true
         }
 
+    },
+
+    filters:{
+
+        monetario(valor){
+
+            if (typeof valor !== "number") {
+                return valor;
+            }
+            
+            let formatter = new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            });
+            
+            return formatter.format(valor);
+        }
     }
-
-    
-
-
-
 }
 </script>
 
@@ -231,8 +262,5 @@ export default {
   .md-menu-content {
     z-index: 111000 !important;
   }
-
-
-
 
 </style>
