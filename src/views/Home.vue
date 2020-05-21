@@ -39,6 +39,10 @@
 </template>
 
 <script>
+
+import {ACAO_INSERIR_PEDIDO, ACAO_EDITAR_PEDIDO} from '../constants/acoes'
+import {mapGetters, mapMutations} from 'vuex'
+
 export default {
     name: 'Pedido',
     components:{
@@ -51,16 +55,25 @@ export default {
 
     methods: {
 
+        ...mapMutations(['setAcao']),
+
+        novoPedido(){
+            return {
+                cliente: {}
+            }
+        },
+        
         onNovoPedido(){
-            console.log('aaaa')
+
+            this.setAcao(ACAO_INSERIR_PEDIDO)
             
-            this.$router.push({ name: 'Pedido', params: {pedido:{} }})
+            this.$router.push({ name: 'Pedido', params: {pedido: this.novoPedido()} })
         }
+    },
+
+    computed:{
+        ...mapGetters(['acao'])
     }
-
-    
-
-
 }
 </script>
 

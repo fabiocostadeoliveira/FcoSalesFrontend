@@ -3,6 +3,7 @@
 		
 		<md-toolbar id="menuBar" class="md-primary">
 			<span id="labelProjectManager" class="md-title">Gerenciador de Vendas</span>  
+			<span>{{ acaoGeral }}</span>
 			<md-button 
 				class="md-icon-button" 
 				to="/">
@@ -30,8 +31,7 @@
 <script>
 
 
-import {mapGetters} from 'vuex'
-
+import {mapGetters, mapMutations} from 'vuex'
 export default {
 	name: 'App',
 	components: {
@@ -40,26 +40,32 @@ export default {
 
 	data: () => ({
 		isSnackbarVisibleLocal: false,
+		acaoGeral:'',
 		snackBarConfiguration: {
 			position: 'center',
-			duration: 5000
-		}
+			duration: 10000
+		},
+
 	}),
 
 	methods:{
-
-		
-
+		...mapMutations(['setSnackbarVisible']),
 	},
 
 	computed:{
 
 		...mapGetters(['isSnackbarVisible', 'messageSnackBar']),
-	}
+	},
 
-	
+	watch: {
+		isSnackbarVisibleLocal(value){
+			this.setSnackbarVisible(value)
+		},
 
-
+		isSnackbarVisible(newValue) {
+			this.isSnackbarVisibleLocal = newValue
+		}
+	},		
 }
 </script>
 

@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios'
-
+//import axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -9,32 +8,16 @@ export default new Vuex.Store({
 
     state: {
         
-        isOpenDialogProjectHantle: false,
-
-        isOpenDialogTaskHantle: false,
-
         snackbarVisible: false,
 
         messageSnackBar: '',
 
-        mainListProjects: [],
-
-        mainListTasks: [],
-
-        detailsProject: {}
+        acao: null,
     },
 
 
     mutations: {
         
-        alternateDialogProjectHandle(state){
-            state.isOpenDialogProjectHantle = !state.isOpenDialogProjectHantle
-        },
-
-        alternateDialogTaskHandle(state){
-            state.isOpenDialogTaskHantle = !state.isOpenDialogTaskHantle
-        },
-
         setSnackbarVisible(state, payload){
             state.snackbarVisible = payload
         },
@@ -43,44 +26,18 @@ export default new Vuex.Store({
             state.messageSnackBar = payload
         },
 
-        setMainListProjects(state, payload){
-            state.mainListProjects = payload
+        setAcao(state, payload){
+            state.acao = payload
         },
-
-        setMainListTasks(state, payload){
-            state.mainListTasks = payload
-        },
-
-        setDetailsProject(state, payload){
-            
-            if (payload == null)
-                state.detailsProject = {
-                    completedPercentage: 0.00,
-                    totalTasks:0,
-                    willBeLate: false
-                }
-            else
-                state.detailsProject = payload
-        }
-
     },
 
     getters: {
         
-        isOpenDialogProjectHantle: state => state.isOpenDialogProjectHantle,
-
-        isOpenDialogTaskHantle: state => state.isOpenDialogTaskHantle,
-
         isSnackbarVisible: state => state.snackbarVisible,
 
         messageSnackBar: state => state.messageSnackBar,
 
-        mainListProjects: state => state.mainListProjects,
-
-        mainListTasks: state => state.mainListTasks,
-
-        detailsProject: state => state.detailsProject,
-
+        acao: state => state.acao,
     },
 
     actions: {
@@ -98,38 +55,5 @@ export default new Vuex.Store({
                 commit('setMessageSnackBar', '')
             },4000)
         },
-
-        loadMainListProjects({ commit }){
-
-            axios.get('/projects').then((response) =>{
-                commit('setMainListProjects', response.data)
-            })
-        },
-
-        loadMainListTasks({ commit }, payload){
-            
-            let queryParams = {
-                params: {
-                    projectId: payload.projectId 
-                }
-            }
-
-            axios.get('/projects/details', queryParams)
-                .then((response) => {
-                    
-                    let {data} = response || null
-                    
-                    commit('setDetailsProject', data)
-                })
-            
-            axios.get('/tasks/byProject', queryParams )
-                .then((response) =>{
-                    
-                    commit('setMainListTasks', response.data)
-                })
-        }
     }
-
-    
-
 })

@@ -64,7 +64,7 @@
 
 <script>
 
-import {mapMutations} from 'vuex'
+import {mapMutations, mapActions} from 'vuex'
 
 export default {
     name: 'ItemPedidoModal', 
@@ -96,7 +96,7 @@ export default {
 
     methods:{
         
-        ...mapMutations(['setMessageSnackBar']),
+        ...mapActions(['showSnackBar']),
 
         addItem(){
 
@@ -132,7 +132,7 @@ export default {
 
             } catch (error) {
 
-                this.setMessageSnackBar('Erro ao consultar produtos')
+                this.showSnackBar('Erro ao consultar produtos')
             }
         },
     },
