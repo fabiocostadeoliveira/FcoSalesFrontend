@@ -113,7 +113,7 @@
 
             <md-button 
                 class="md-button md-accent"
-                @click="onGravar">
+                @click="onFinalizar">
                 <h2>Finalizar</h2>
             </md-button>
         </div>
@@ -137,12 +137,12 @@
                     <div class="actionsButtons">
                         <md-button 
                             class="md-icon-button md-accent"       
-                            @click="onEditar(itemTable)">
+                            @click="onEditarItem(item)">
                             <md-icon id="iconHome">create</md-icon>
                         </md-button>
                         <md-button 
                             class="md-icon-button md-accent"       
-                            @click="onExcluir(itemTable)">
+                            @click="onExcluirItem(item)">
                             <md-icon id="iconHome">delete_forever</md-icon>
                         </md-button>
                     </div>
@@ -154,11 +154,27 @@
         <ItemPedidoModal
             v-model="showModalItemPedido"
             :item="item"
-            @itemAdicionado="addProdutoNaListaDeItens"/>
+            :acao="acaoItem"
+            @itemAdicionado="addProdutoNaListaDeItens"
+            @itemEditado="atualizaProdutoNaListaDeItens"/>
 
-        <div>
+        <md-dialog-confirm            
+            :md-active.sync="mostraModalFinalizar"
+            md-title="Finalizar Pedido ?"
+            md-content="Voce nao podera mais altera-lo"
+            md-confirm-text="Confirmar"
+            md-cancel-text="Cancelar"            
+            @md-confirm="onConfirmaModalFinalizar" />        
 
-        </div>
+
+        <md-dialog-confirm            
+            :md-active.sync="mostraModalDeletarItem"
+            md-title="Deseja excluir o item ?"
+            md-content="Caso voce se arrependa, volte para a Home, no botao 'voltar'."
+            md-confirm-text="Confirmar"
+            md-cancel-text="Cancelar"            
+            @md-confirm="onConfirmaModalDeletarItem" />        
+
         
     </div>
 </template>
@@ -179,7 +195,11 @@ const pesquisaPorDescricao = (items, term) => {
 import ItemPedidoModal from '../components/ItemPedidoModal'
 import {dateUtil} from '../mixins/DateUtils'
 import {mapGetters, mapMutations, mapActions} from 'vuex'
-import {ACAO_INSERIR_PEDIDO, ACAO_EDITAR_PEDIDO} from '../constants/acoes'
+import {ACAO_INSERIR_PEDIDO, 
+        ACAO_EDITAR_PEDIDO,
+        ACAO_CONSULTA_PEDIDO,
+        ACAO_INSERIR_ITEM,
+        ACAO_EDITAR_ITEM} from '../constants/acoes'
 
 export default {
     name: 'Pedido',
@@ -197,7 +217,15 @@ export default {
         item:{},
         pedidoLocal:{ numero: null, cliente:{}},
         estaSalvando:false,
-        desativado:null
+        desativado:null,
+        finalizar:false,
+        mostraModalFinalizar: false,
+        mostraModalDeletarItem: false,
+        itemParaDelecao:null,
+        sucessoAoGravar:false,
+        itemParaEdicao:null,
+        mostraModalEditarItem:null,
+        acaoItem:null
     }),
 
     props:{
@@ -217,6 +245,8 @@ export default {
         onAdicionarProduto(){
             
             this.item = {}
+
+            this.acaoItem = ACAO_INSERIR_ITEM
 
             this.showModalItemPedido = true
         },
@@ -251,8 +281,10 @@ export default {
             this.pedidoLocal = {...this.pedido}
         },
 
-        async onGravar(){
+        async onGravar(retorna){
             
+            this.sucessoAoGravar = false
+
             try {
                 this.estaSalvando = true
 
@@ -266,6 +298,7 @@ export default {
 
                 this.showSnackBar('SALVO COM SUCESSO')
 
+                this.sucessoAoGravar = true
             } catch (error) {
                 
                 let defaultMessage = error?.response?.data?.errors[0]?.defaultMessage || ''
@@ -305,6 +338,100 @@ export default {
         voltarParaHome(){
             this.$router.replace('/')
         },
+
+        onFinalizar(){
+           
+            this.confirmaFinalizacaoModal()
+
+        },
+
+        confirmaFinalizacaoModal(){
+            this.finalizar = false
+            this.mostraModalFinalizar = true
+        },
+
+        async onConfirmaModalFinalizar(){
+            try {
+
+                await this.onGravar()    
+
+                if(this.sucessoAoGravar == false )
+                    throw 'Erro ao gravar pedido'
+
+                let response = await this.$http.put('/pedidos/finalizar/' + this.pedidoLocal.numero, {})
+
+                this.showSnackBar('Pedido finalizado com sucesso.')
+
+                this.voltarParaHome()
+
+            } catch (error) {
+                this.showSnackBar('Erro ao finalizar pedido.')
+            }
+        },
+
+        onExcluirItem(item){
+            
+            let indice = this.findIndiceItemNaLista(item, this.listaItens)
+            
+            this.itemParaDelecao = this.listaItens[indice]
+            
+            this.mostraModalDeletarItem = true
+        },
+
+        onConfirmaModalDeletarItem(){
+            
+            let indice = this.findIndiceItemNaLista(this.itemParaDelecao, this.listaItens)
+
+            console.log('idice para delecao', indice)
+
+            this.listaItens.splice(indice,1)
+        },
+
+        onEditarItem(item){
+            
+            let indice = this.findIndiceItemNaLista(item, this.listaItens)
+
+            this.itemParaEdicao = this.listaItens[indice]
+
+            this.item = Object.assign({}, this.item, this.itemParaEdicao)
+
+            this.acaoItem = ACAO_EDITAR_ITEM
+
+            this.showModalItemPedido = true
+
+            this.$forceUpdate()
+        },
+
+        atualizaProdutoNaListaDeItens(){
+
+            let indice = this.findIndiceItemNaLista(this.itemParaEdicao, this.listaItens)
+
+            this.listaItens[indice] = {... this.item}
+        },
+
+        findIndiceItemNaLista(elemento, arr){
+            
+            for (let index = 0; index < arr.length; index++) {
+                
+                const elArray = arr[index];
+                
+                if(this.itensSaoIguais(elArray, elemento)){
+                    return index
+                }
+            }
+            return -1
+        },
+
+        itensSaoIguais(el1, el2){
+            
+            return el1.produto.id == el2.produto.id &&
+                    el1.quantidade == el2.quantidade &&
+                    el1.preco == el2.preco &&
+                    el1.total == el2.total
+        }
+
+
+
     },
 
     computed:{
@@ -344,7 +471,7 @@ export default {
         },
 
         acao(){
-            this.desativado = this.acao === ACAO_INSERIR_PEDIDO ? false : true
+            this.desativado = this.acao === ACAO_CONSULTA_PEDIDO ? true : false
         }
 
     },

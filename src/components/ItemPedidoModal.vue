@@ -53,9 +53,9 @@
                     @click="onCancelar">Cancelar</md-button>
                 
                 <md-button 
-                    :disabled="addDesabilitado"
+                    :disabled="confirmarDesabilitado"
                     class="md-accent" 
-                    @click="addItem">Add</md-button>
+                    @click="confirmarItem">Confirmar</md-button>
             </md-dialog-actions>
 
         </md-dialog>
@@ -65,7 +65,7 @@
 <script>
 
 import {mapMutations, mapActions} from 'vuex'
-
+import {ACAO_INSERIR_ITEM,ACAO_EDITAR_ITEM} from '../constants/acoes'
 export default {
     name: 'ItemPedidoModal', 
     components: {
@@ -82,6 +82,11 @@ export default {
         item:{
             type: Object,
             default: () => ({})
+        },
+
+        acao: {
+            type: String,
+            default: () => ('')
         }
         
     },
@@ -98,14 +103,24 @@ export default {
         
         ...mapActions(['showSnackBar']),
 
-        addItem(){
+        confirmarItem(){
 
             this.updateItem()
 
+            this.emitirEventos()
+        },
+
+        emitirEventos(){
+            
             this.$emit('input', false)
 
-            this.$emit('itemAdicionado')
-
+            if (this.acao === ACAO_INSERIR_ITEM)
+                
+                this.$emit('itemAdicionado')
+            else
+            if(this.acao === ACAO_EDITAR_ITEM)
+                
+                this.$emit('itemEditado')
         },
 
         updateItem(){
@@ -167,7 +182,7 @@ export default {
             return preco * qtd
         },
 
-        addDesabilitado(){
+        confirmarDesabilitado(){
             return this.valorTotalItem > 0 ? false : true
 
         },
@@ -193,9 +208,16 @@ export default {
 
         item:{
             handler(val){
-                if (Object.keys(val)){
+                if (this.acao === ACAO_INSERIR_ITEM){
+
                     this.produtoSelecionado = null
+
                     this.quantidade = 1
+                }else if(this.acao === ACAO_EDITAR_ITEM){
+                    
+                    this.produtoSelecionado = this.item.produto
+                    
+                    this.quantidade = this.item.quantidade
                 }
             },
             deep: true
@@ -219,7 +241,18 @@ export default {
             
             return formatter.format(valor);
         }
+    },
+
+    mounted(){
+        console.log('caiu no mounted no item')
+    },
+
+    beforeUpdate(){
+        console.log('beforeUpdate', this.item)
     }
+
+
+    
 }
 </script>
 
