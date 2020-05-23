@@ -23,8 +23,24 @@ new ConfigAxios()
 
 Vue.config.productionTip = false
 
+Vue.filter('monetario', function (valor) {
+
+    if (typeof valor !== "number") {
+        return valor;
+    }
+    
+    let formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2
+    });
+    
+    return formatter.format(valor);
+})
+
 new Vue({
   router,
   store,
   render: h => h(App),
 }).$mount('#app')
+

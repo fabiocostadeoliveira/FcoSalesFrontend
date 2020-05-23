@@ -71,4 +71,12 @@ export default {
 
 <style>
 
+	.md-theme-default.md-dialog-fullscreen.md-dialog-container{
+		transform: none;
+	}
+
+	.md-theme-default .md-dialog-container {
+		transform: none;
+	}
+
 </style>

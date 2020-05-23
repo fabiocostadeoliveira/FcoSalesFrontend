@@ -24,22 +24,42 @@
                 <md-table-cell md-label="Razão Social" md-sort-by="razao_social">{{ item.cliente.nome  }}</md-table-cell>
                 <md-table-cell md-label="CNPJ" md-sort-by="cnpj">{{ item.cliente.cnpj  }}</md-table-cell>
                 
-                <md-table-cell md-label="" >
+                <md-table-cell md-label="Ações" >
                     <div class="actionsButtons">
                         <md-button 
                             class="md-icon-button md-accent"       
-                            @click="onEditarItem(item)">
+                            @click="onEditarPedido(item)">
                             <md-icon id="iconHome">create</md-icon>
                         </md-button>
                         <md-button 
                             class="md-icon-button md-accent"       
-                            @click="onExcluirItem(item)">
+                            @click="onExcluirPedido(item)">
                             <md-icon id="iconHome">delete_forever</md-icon>
                         </md-button>
                     </div>
                 </md-table-cell>
+
+                <!-- <md-table-cell md-label="Excluir" >
+                    <div class="actionsButtons">
+                        <md-button 
+                            class="md-icon-button md-accent"       
+                            @click="onExcluirPedido(item)">
+                            <md-icon id="iconHome">delete_forever</md-icon>
+                        </md-button>
+                    </div>
+                </md-table-cell> -->
+
             </md-table-row>
         </md-table>
+
+        <md-dialog-confirm            
+            :md-active.sync="mostraModalDeletarPedido"
+            md-title="Deseja excluir o pedido ?"
+            md-content="Isso irá excluir permanentemente o pedido."
+            md-confirm-text="Confirmar"
+            md-cancel-text="Cancelar"            
+            @md-confirm="onConfirmaModalDeletarPedido" />        
+
 
     </div>
   
@@ -55,7 +75,6 @@ const pesquisaPedidos = (items, term) => {
     if (term) {
         
         return items.filter(item => {
-            console.log('pesquisa', item)
             return item.id == term
                 || toLower(item.cliente.nome).includes(toLower(term))
                 || toLower(item.cliente.cnpj).includes(toLower(term))
@@ -66,7 +85,7 @@ const pesquisaPedidos = (items, term) => {
 }
 
 import {ACAO_INSERIR_PEDIDO, ACAO_EDITAR_PEDIDO} from '../constants/acoes'
-import {mapGetters, mapMutations} from 'vuex'
+import {mapGetters, mapActions, mapMutations} from 'vuex'
 
 export default {
     name: 'Pedido',
@@ -75,13 +94,17 @@ export default {
     },
 
     data: () => ({
+        mostraModalDeletarPedido: false,
         filtroItem: '',
         listaDePesquisa:[],
-        listaPesquisaPedidos:[]
+        listaPesquisaPedidos:[],
+        pedidoParaDelecao:null,
 
     }),
 
     methods: {
+
+        ...mapActions(['showSnackBar']),
 
         ...mapMutations(['setAcao']),
 
@@ -89,6 +112,10 @@ export default {
             return {
                 cliente: {}
             }
+        },
+
+        copiaPedido(){
+
         },
         
         onNovoPedido(){
@@ -103,15 +130,69 @@ export default {
             this.listaPesquisaPedidos = pesquisaPedidos(this.listaPedidosHome, this.filtroItem)
         },
 
-        ordenaListaPedidos(v1, v2){
-            if (v1.data.getTime() >= v2.data.getTime())
-                return -1
-
-            if (v1.data.getTime() <= v2.data.getTime())
-                return 1
+        //TODO - deixar esse metodo generico
+        findIndicePedidoNaLista(elemento, arr){
             
-            return 0
+            for (let index = 0; index < arr.length; index++) {
+                
+                const elArray = arr[index];
+                
+                if(this.itensSaoIguais(elArray, elemento)){
+                    return index
+                }
+            }
+            return -1
+        },
+
+        //TODO - deixar esse metodo generico
+        itensSaoIguais(el1, el2){
+            
+            return el1.produto.id == el2.produto.id &&
+                    el1.quantidade == el2.quantidade &&
+                    el1.preco == el2.preco &&
+                    el1.total == el2.total
+        },
+
+        onExcluirPedido(item){
+
+            this.pedidoParaDelecao = item
+
+            this.mostraModalDeletarPedido = true
+        },
+
+        async onConfirmaModalDeletarPedido(){
+
+            try {
+                
+                await this.$http.delete('/pedidos/' + this.pedidoParaDelecao.id)
+
+            } catch (error) {
+
+                //TODO - deixar tratamento de msg de response generico
+                let defaultMessage = error?.response?.data?.errors[0]?.defaultMessage || ''
+
+                this.showSnackBar('Erro ao salvar pedido' + (defaultMessage != '' ? ': ' + defaultMessage : '.') )
+            }
+            
+            this.carregaPedidos()
+
+            this.showSnackBar('PEDIDO FOI EXCLUIDO')
+        },
+
+        onEditarPedido(item){
+            
+            let pedidoEdt = this.listaPedidosHome.find( (p) => p.id == item.id )
+
+             this.setAcao(ACAO_EDITAR_PEDIDO)
+
+            this.$router.push({ name: 'Pedido', params: {pedido: pedidoEdt} })
+        },
+
+        carregaPedidos(){
+            
+            this.$store.dispatch('carregaListaPedidosHome')
         }
+
     },
 
     computed:{
@@ -122,8 +203,9 @@ export default {
 
 
         listaPedidosHome(){
-            console.log('aaaaaa')
+
             if(this.listaPedidosHome !== null ){
+            
                 this.listaPesquisaPedidos = this.listaPedidosHome
             }
         },
@@ -131,11 +213,19 @@ export default {
 
     mounted(){
         
-        this.$store.dispatch('carregaListaPedidosHome')
+        this.carregaPedidos()
     }
 }
 </script>
 
-<style>
+<style lang="scss">
+
+    .md-theme-default.md-dialog-fullscreen.md-dialog-container{
+        transform: none; 
+    }
+
+    .md-menu-content {
+        z-index: 100000 !important;
+    }
 
 </style>

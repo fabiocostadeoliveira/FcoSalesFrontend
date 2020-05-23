@@ -64,6 +64,14 @@
 
 <script>
 
+const converteItemParaSeletor = (x) => ({
+                        'id':x.id,
+                        'descricao':x.descricao,
+                        'toLowerCase':()=>x.descricao.toLowerCase(),
+                        'toString':()=>x.descricao
+                        })
+
+
 import {mapMutations, mapActions} from 'vuex'
 import {ACAO_INSERIR_ITEM,ACAO_EDITAR_ITEM} from '../constants/acoes'
 export default {
@@ -127,9 +135,9 @@ export default {
 
             this.$set(this.item, 'produto', this.produtoSelecionado)
 
-            this.$set(this.item, 'quantidade', this.quantidade)
+            this.$set(this.item.produto, 'preco', this.precoProduto)
 
-            this.$set(this.item, 'preco', this.precoProduto)
+            this.$set(this.item, 'quantidade', this.quantidade)
 
             this.$set(this.item, 'total', this.valorTotalItem)
         },
@@ -139,6 +147,7 @@ export default {
         },
 
         async carregaProdutos(){
+
             try {
                 
                 let {data} = await this.$http.get('/produtos')
@@ -188,22 +197,17 @@ export default {
         },
 
         filtroProdutos(){
-            
-            return this.listaProdutos.map(x=>({
-                        'id':x.id,
-                        'descricao':x.descricao,
-                        'toLowerCase':()=>x.descricao.toLowerCase(),
-                        'toString':()=>x.descricao
-                        
-                    }))
+            return this.listaProdutos.map(converteItemParaSeletor)
         }
     },
 
     watch:{
 
-        value(){
-            if (this.value === true)
+        async value(){
+
+            if (this.value === true){
                 this.carregaProdutos()
+            }
         },
 
         item:{
@@ -215,8 +219,11 @@ export default {
                     this.quantidade = 1
                 }else if(this.acao === ACAO_EDITAR_ITEM){
                     
-                    this.produtoSelecionado = this.item.produto
-                    
+                    let produto = this.listaProdutos.find( (p) => p.id = this.item.produto.id)
+
+                    if (produto)
+                        this.produtoSelecionado = converteItemParaSeletor(produto)
+
                     this.quantidade = this.item.quantidade
                 }
             },
@@ -227,6 +234,7 @@ export default {
 
     filters:{
 
+        /*
         monetario(valor){
 
             if (typeof valor !== "number") {
@@ -241,18 +249,13 @@ export default {
             
             return formatter.format(valor);
         }
+        */
     },
 
-    mounted(){
-        console.log('caiu no mounted no item')
+    async mounted(){
+
+        await this.carregaProdutos()
     },
-
-    beforeUpdate(){
-        console.log('beforeUpdate', this.item)
-    }
-
-
-    
 }
 </script>
 
@@ -269,31 +272,31 @@ export default {
         align-items: center;
     }
 
-    .md-theme-default.md-dialog-fullscreen.md-dialog-container{
-        transform: none; 
-    }
-
-.color {
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-    margin-right: 16px;
-    border: 1px solid rgba(#000, .12);
-  }
-
-  .md-helper-text {
-    display: flex;
-    align-items: center;
+    // .md-theme-default.md-dialog-fullscreen.md-dialog-container{
+    //     transform: none; 
+    // }
 
     .color {
-      width: 12px;
-      height: 12px;
-      margin-left: 4px;
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        margin-right: 16px;
+        border: 1px solid rgba(#000, .12);
     }
-  }
 
-  .md-menu-content {
-    z-index: 111000 !important;
-  }
+    .md-helper-text {
+        display: flex;
+        align-items: center;
+
+        .color {
+            width: 12px;
+            height: 12px;
+            margin-left: 4px;
+            }
+        }
+
+    .md-menu-content {
+        z-index: 100000 !important;
+    }
 
 </style>

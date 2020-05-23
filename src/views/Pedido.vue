@@ -8,7 +8,7 @@
                     <label>Numero do Pedido</label>
                     <md-input 
                         disabled
-                        v-model="pedidoLocal.numero">
+                        v-model="pedidoLocal.id">
                     </md-input>
                 </md-field>
             </div>
@@ -30,13 +30,13 @@
             <div class="md-layout-item md-size-20">
                 <md-autocomplete 
                     :disabled="desativado"
-                    v-model="clienteSelecionado" 
-                    :md-options="filtroClientes"
-                    >
+                    v-model="clienteSelecionado"                  
+                    :md-options="filtroClientes">
+
                     <label>Selecione o cliente</label>
 
-                    <template slot="md-autocomplete-cliente" slot-scope="{ cliente }">                        
-                        <md-highlight-text :md-term="cliente.nome">{{ cliente }}</md-highlight-text>
+                    <template slot="md-autocomplete-cliente" slot-scope="{ item, term }">                        
+                        <md-highlight-text :md-term="term">{{ item }}</md-highlight-text>
                     </template>
 
                 </md-autocomplete>
@@ -57,7 +57,7 @@
                 <md-field>
                     <label>Razão Social</label>
                     <md-input
-                        :disabled="desativado"
+                        disabled
                         v-model="pedidoLocal.cliente.nome"
                         >
                     </md-input>
@@ -118,7 +118,7 @@
             </md-button>
         </div>
 
-        <md-table v-model="listaDePesquisa" md-sort="produto.descricao" md-sort-order="asc" table-header-color="green" class="md-primary" >
+        <md-table v-model="listaDePesquisa" md-sort="descricao" md-sort-order="asc" table-header-color="green" class="md-primary" >
             <md-table-toolbar>
                 <div class="md-toolbar-section-start md-accent">
                     <h1 class="md-title">Produtos</h1>
@@ -130,8 +130,8 @@
             <md-table-row slot="md-table-row" slot-scope="{ item }">
                 <md-table-cell md-label="Produto" md-sort-by="descricao">{{ item.produto.descricao }}</md-table-cell>
                 <md-table-cell md-label="Qtd" md-sort-by="quantidade">{{ item.quantidade }}</md-table-cell>
-                <md-table-cell md-label="Preço" md-sort-by="preco">{{ item.preco }}</md-table-cell>
-                <md-table-cell md-label="Total" md-sort-by="total">{{ item.total  }}</md-table-cell>
+                <md-table-cell md-label="Preço" md-sort-by="preco">{{ item.produto.preco | monetario }}</md-table-cell>
+                <md-table-cell md-label="Total" md-sort-by="total">{{ item.total | monetario }}</md-table-cell>
                 
                 <md-table-cell md-label="" >
                     <div class="actionsButtons">
@@ -158,7 +158,7 @@
             @itemAdicionado="addProdutoNaListaDeItens"
             @itemEditado="atualizaProdutoNaListaDeItens"/>
 
-        <md-dialog-confirm            
+        <md-dialog-confirm
             :md-active.sync="mostraModalFinalizar"
             md-title="Finalizar Pedido ?"
             md-content="Voce nao podera mais altera-lo"
@@ -166,16 +166,13 @@
             md-cancel-text="Cancelar"            
             @md-confirm="onConfirmaModalFinalizar" />        
 
-
         <md-dialog-confirm            
             :md-active.sync="mostraModalDeletarItem"
-            md-title="Deseja excluir o item ?"
-            md-content="Caso voce se arrependa, volte para a Home, no botao 'voltar'."
+            md-title="Deseja excluir o item ?"            
             md-confirm-text="Confirmar"
             md-cancel-text="Cancelar"            
             @md-confirm="onConfirmaModalDeletarItem" />        
 
-        
     </div>
 </template>
 
@@ -190,6 +187,14 @@ const pesquisaPorDescricao = (items, term) => {
         return items.filter(item => toLower(item.produto.descricao).includes(toLower(term)))
     }
     return items
+}
+
+//TODO - converter para componente ...seletor de cliente
+const converteClienteParaSeletor = (c) =>{
+    return { 'id':c.id,
+             'nome':c.nome,
+             'toLowerCase':()=>c.nome.toLowerCase(),
+             'toString':()=>c.nome }
 }
 
 import ItemPedidoModal from '../components/ItemPedidoModal'
@@ -232,7 +237,7 @@ export default {
         
         pedido:{
             type: Object,
-            default: () => ({ cliente: {}})
+            default: () => ({ cliente: {id: 0}})
         },
     },
 
@@ -261,7 +266,7 @@ export default {
             this.listaItens.push(this.item)
         },
 
-        configurarAcoes(){
+        async configurarAcoes(){
             
             if (this.acao === ACAO_INSERIR_PEDIDO)
                 
@@ -277,12 +282,18 @@ export default {
         },
 
         configuraEditar(){
+            
+            this.pedidoLocal = this.pedido
 
-            this.pedidoLocal = {...this.pedido}
+            // TODO - tentar deixar dentro do objeto de itens que vem dentro do this.pedido
+            this.listaItens = this.pedido.itens
+
+            let cliente = this.listaClientes.find( (c) => this.pedido.cliente.id == c.id)
+
+            this.clienteSelecionado = converteClienteParaSeletor(cliente)
         },
 
         async onGravar(){
-            console.log('dentro do gravar ')
             this.sucessoAoGravar = false
 
             try {
@@ -296,13 +307,13 @@ export default {
                     
                     response = await this.$http.post('/pedidos', payload)
 
-                    this.pedidoLocal.numero = response.data.id
+                    this.pedidoLocal.id = response.data.id
 
                     this.setAcao(ACAO_EDITAR_PEDIDO)
 
                 }else if(this.acao === ACAO_EDITAR_PEDIDO){
 
-                    response = await this.$http.put('/pedidos/' + this.pedidoLocal.numero, payload)
+                    response = await this.$http.put('/pedidos/' + this.pedidoLocal.id, payload)
                 }
 
                 this.showSnackBar('SALVO COM SUCESSO')
@@ -310,6 +321,7 @@ export default {
                 this.sucessoAoGravar = true
             } catch (error) {
                 
+                //TODO - deixar tramento de msg abaixo generico
                 let defaultMessage = error?.response?.data?.errors[0]?.defaultMessage || ''
                 
                 this.showSnackBar('Erro ao salvar pedido' + (defaultMessage != '' ? ': ' + defaultMessage : '.') )
@@ -332,7 +344,6 @@ export default {
         },
 
         async carregarClientes(){
-
             try {
                 
                 let {data} = await this.$http.get('/clientes')
@@ -366,7 +377,7 @@ export default {
                 if(this.sucessoAoGravar == false )
                     throw 'Erro ao gravar pedido'
 
-                let response = await this.$http.put('/pedidos/finalizar/' + this.pedidoLocal.numero, {})
+                let response = await this.$http.put('/pedidos/finalizar/' + this.pedidoLocal.id, {})
 
                 this.showSnackBar('Pedido finalizado com sucesso.')
 
@@ -390,8 +401,6 @@ export default {
         onConfirmaModalDeletarItem(){
             
             let indice = this.findIndiceItemNaLista(this.itemParaDelecao, this.listaItens)
-
-            console.log('idice para delecao', indice)
 
             this.listaItens.splice(indice,1)
         },
@@ -437,10 +446,7 @@ export default {
                     el1.quantidade == el2.quantidade &&
                     el1.preco == el2.preco &&
                     el1.total == el2.total
-        }
-
-
-
+        },
     },
 
     computed:{
@@ -448,13 +454,7 @@ export default {
         ...mapGetters(['acao']),
         
         filtroClientes(){
-            
-            return this.listaClientes.map(x=>({
-                    'id':x.id,
-                    'nome':x.nome,
-                    'toLowerCase':()=>x.nome.toLowerCase(),
-                    'toString':()=>x.nome
-                }))
+            return this.listaClientes.map(converteClienteParaSeletor)
         }
 
     },
@@ -473,6 +473,7 @@ export default {
             let cliente = this.clienteSelecionado || null
             
             if(cliente !== null){
+
                 this.pedidoLocal.cliente = this.listaClientes.find( (el) => el.id == cliente.id)
             }else{
                 this.pedidoLocal.cliente = {}
@@ -490,24 +491,24 @@ export default {
 
     },
 
-    mounted(){
+    async beforeMount(){
         if( this.acao === null || this.acao === undefined )
             this.voltarParaHome()
 
-        this.configurarAcoes()
+        await this.carregarClientes()
 
-        this.carregarClientes()
+        await this.configurarAcoes()
     },
-
 }
 </script>
 
 <style lang="scss" >
 
-
-    .md-menu-content {
-        z-index: 111000 !important;
+    .md-theme-default.md-dialog-fullscreen.md-dialog-container{
+        transform: none; 
     }
-  
-
+    
+    .md-menu-content {
+        z-index: 100000 !important;
+    }
 </style>
