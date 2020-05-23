@@ -240,7 +240,7 @@ export default {
 
         ...mapActions(['showSnackBar']),
 
-        ...mapMutations(['setAcao']),
+        ...mapMutations(['setAcao', 'carregaListaPedidosHome']),
 
         onAdicionarProduto(){
             
@@ -281,8 +281,8 @@ export default {
             this.pedidoLocal = {...this.pedido}
         },
 
-        async onGravar(retorna){
-            
+        async onGravar(){
+            console.log('dentro do gravar ')
             this.sucessoAoGravar = false
 
             try {
@@ -290,11 +290,20 @@ export default {
 
                 let payload = this.retornaDadosParaSalvar()
 
-                let {data} = await this.$http.post('/pedidos', payload)
+                let response = null
 
-                this.pedidoLocal.numero = data.id
+                if (this.acao === ACAO_INSERIR_PEDIDO){
+                    
+                    response = await this.$http.post('/pedidos', payload)
 
-                this.setAcao(ACAO_EDITAR_PEDIDO)
+                    this.pedidoLocal.numero = response.data.id
+
+                    this.setAcao(ACAO_EDITAR_PEDIDO)
+
+                }else if(this.acao === ACAO_EDITAR_PEDIDO){
+
+                    response = await this.$http.put('/pedidos/' + this.pedidoLocal.numero, payload)
+                }
 
                 this.showSnackBar('SALVO COM SUCESSO')
 
@@ -308,7 +317,7 @@ export default {
         },
 
         retornaDadosParaSalvar(){
-
+            
             return this.newPedidoParaSalvar(this.pedidoLocal.cliente.id, this.listaItens)
         },
 
@@ -316,7 +325,7 @@ export default {
 
             let newItens = itens.map( (i) => ({produtoId:i.produto.id, quantidade:i.quantidade}))
     
-            return {
+            return {                
                 clienteId:clienteId,
                 itens:newItens
             }
@@ -352,7 +361,6 @@ export default {
 
         async onConfirmaModalFinalizar(){
             try {
-
                 await this.onGravar()    
 
                 if(this.sucessoAoGravar == false )
@@ -365,6 +373,7 @@ export default {
                 this.voltarParaHome()
 
             } catch (error) {
+
                 this.showSnackBar('Erro ao finalizar pedido.')
             }
         },
@@ -472,6 +481,11 @@ export default {
 
         acao(){
             this.desativado = this.acao === ACAO_CONSULTA_PEDIDO ? true : false
+        },
+
+        sucessoAoGravar(){
+            
+            this.$store.dispatch('carregaListaPedidosHome')
         }
 
     },

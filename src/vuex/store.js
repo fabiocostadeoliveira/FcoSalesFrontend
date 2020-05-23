@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-//import axios from 'axios'
+import axios from 'axios'
 
 Vue.use(Vuex)
 
@@ -13,6 +13,8 @@ export default new Vuex.Store({
         messageSnackBar: '',
 
         acao: null,
+
+        listaPedidosHome: []
     },
 
 
@@ -29,6 +31,10 @@ export default new Vuex.Store({
         setAcao(state, payload){
             state.acao = payload
         },
+
+        setListaPedidosHome(state, payload){
+            state.listaPedidosHome = payload
+        }
     },
 
     getters: {
@@ -38,6 +44,8 @@ export default new Vuex.Store({
         messageSnackBar: state => state.messageSnackBar,
 
         acao: state => state.acao,
+
+        listaPedidosHome: state => state.listaPedidosHome
     },
 
     actions: {
@@ -55,5 +63,15 @@ export default new Vuex.Store({
                 commit('setMessageSnackBar', '')
             },4000)
         },
+
+        carregaListaPedidosHome( { commit } ){
+            
+            axios.get('/pedidos').then( (response) => {
+                
+                let dados = response.data || []
+
+                commit('setListaPedidosHome', dados)
+            })
+        }
     }
 })
