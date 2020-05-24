@@ -84,6 +84,7 @@ export default {
 				return
 			}
 
+			console.log('setar usuario', usuarioJson)
 			this.setUsuario(usuarioJson)
 		},
 

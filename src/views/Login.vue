@@ -4,18 +4,29 @@
 
         <md-card>
             <md-card-content>
-                <div>
+
+
+                <div v-if="cadastrar">
                     <md-field>
                         <label>Usuario</label>
                         <md-input 
-                            v-model="usuario">
+                            v-model="nome">
                         </md-input>
                     </md-field>
                 </div>
 
                 <div>
                     <md-field>
-                        <label>Password toggle</label>
+                        <label>Login</label>
+                        <md-input 
+                            v-model="login">
+                        </md-input>
+                    </md-field>
+                </div>
+
+                <div>
+                    <md-field>
+                        <label>Senha</label>
                         <md-input 
                             v-model="senha" 
                             type="password">
@@ -26,6 +37,9 @@
             </md-card-content>
 
             <md-card-actions>
+                
+                <md-checkbox v-model="cadastrar">Cadastrar usuario?</md-checkbox>
+
                 <md-button 
                     class="md-primary"
                     @click="onEntrar">Entrar</md-button>
@@ -39,32 +53,110 @@
 
 <script>
 
-import {mapMutations} from 'vuex'
+import {mapMutations, mapActions} from 'vuex'
 
 export default {
     name:'Login',
 
     data: () => ({
         manterConectado: false,
+        login:null,
+        nome:null,
         usuario:null,
-        senha:null
+        senha:null,
+        cadastrar: false
 
     }),
 
     methods: {
         
         ...mapMutations(['setUsuario']),
+
+        ...mapActions(['showSnackBar']),
         
         onEntrar(){
+            
             let usuario = {
-                id: 1,
-                nome: this.usuario                
+                id: null,
+                nome: this.nome,
+                login: this.login,
+                senha: this.senha
+            }
+
+            if(this.cadastrar){
+                this.salvar(usuario)
+            }else{
+                this.loginApp(usuario)
             }
             
-            localStorage.setItem('usuario', JSON.stringify(usuario));
+            
+        },
 
-            this.setUsuario(usuario)
+        async salvar(obj){
+            try {
+                
+                let payload = obj
+                
+                let {data} = await this.$http.post('/usuarios', payload)
 
+                this.redirecionaParaHome(data)
+
+                let usr = this.autenticar(data.login, data.senha)
+
+                if (usr === null){
+                    throw  'Ocorreu algum erro no processo de cadastro/login'
+                }
+
+            } catch (error) {
+                
+                this.showSnackBar('Erro ao salvar' + error)
+
+                console.log(error.reponse)                
+            }
+        },
+
+        
+        async autenticar(login, senha){
+
+            try {
+
+                let queryParams = {
+                    params: {
+                        login: login,
+                        senha: senha
+                    }
+                }
+                
+                let {data} = await this.$http.get('/usuarios/autenticate', queryParams)
+
+                return data
+            } catch (error) {
+
+                console.log(error.reponse)
+                
+                return null
+            }
+        },
+        
+        async loginApp(obj){
+            
+            let usrAutenticado = await this.autenticar(obj.login, obj.senha) 
+
+            if (usrAutenticado == null){
+                
+                this.showSnackBar('Erro ao tentar autenticar usuario, verifique a senha e o login')
+
+                return 
+            }
+
+            localStorage.setItem('usuario', JSON.stringify(obj));
+
+            this.setUsuario(obj)
+
+            this.redirecionaParaHome()
+        },
+
+        redirecionaParaHome(usuario){
             this.$router.replace('/')
         }
     }
