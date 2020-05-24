@@ -2,15 +2,31 @@
 	<div id="app">
 		
 		<md-toolbar id="menuBar" class="md-primary">
-			<span id="labelProjectManager" class="md-title">Gerenciador de Vendas</span>  
-			<span>{{ acaoGeral }}</span>
-			<md-button 
-				class="md-icon-button" 
-				to="/">
-				<md-icon id="iconHome">home</md-icon>
-			</md-button>
-		</md-toolbar>
+			
+			<div class="menuPrincipal">
+				
+				<div class="">
+					<span id="labelProjectManager" class="md-title">Gerenciador de Vendas</span>  					
+					<md-button 
+						class="md-icon-button" 
+						to="/">
+						<md-icon id="iconHome">home</md-icon>
+					</md-button>
+				</div>
 
+				<div>
+					
+					<span v-if="usuario.nome !== undefined"> Usuario: {{ usuario.nome }}</span>
+					<md-button 
+						class="md-icon-button"
+						@click="onLogout">
+						<md-icon id="iconHome">exit_to_app</md-icon>
+						<md-tooltip md-direction="left">Logout</md-tooltip>
+					</md-button>
+				</div>
+			</div> 
+
+		</md-toolbar>
 
 		<md-snackbar 
 			:md-position="snackBarConfiguration.position" 
@@ -46,12 +62,12 @@ export default {
 			position: 'center',
 			duration: 10000
 		},
-		usuarioConectado:null
-
+		usuarioConectado:null,
+		estaLogado: false
 	}),
 
 	methods:{
-		...mapMutations(['setSnackbarVisible']),
+		...mapMutations(['setSnackbarVisible', 'setUsuario']),
 
 		iniciarApp(){
 
@@ -59,21 +75,40 @@ export default {
 
 			let usuarioJson = null
 
-			if (usuarioStorage != null )
+			if (usuarioStorage != null ){
 				usuarioJson = JSON.parse(usuarioStorage) || null
-
-			
-			if(usuarioJson === null){
-				this.$router.replace('/login').catch( err => {})
 			}
 
-			this.usuarioConectado = {id:usuarioJson.id, nome: usuarioJson.nome}
+			if(usuarioJson === null){
+				this.login()
+				return
+			}
+
+			this.setUsuario(usuarioJson)
+		},
+
+		onLogout(){
+
+			this.setUsuario({})
+
+			localStorage.removeItem('usuario')
+
+			this.login()
+		},
+
+		login(){
+			this.$router.replace('/login').catch( err => {})
 		}
 	},
 
 	computed:{
 
-		...mapGetters(['isSnackbarVisible', 'messageSnackBar']),
+		...mapGetters(['isSnackbarVisible', 'messageSnackBar','usuario']),
+
+		mostraUsuario(){
+			console.log('keys:', Object.keys(this.usuario ))
+			return Object.keys(this.usuario) > 0 ? true : false
+		}
 	},
 
 	watch: {
@@ -102,6 +137,12 @@ export default {
 
 	.md-theme-default .md-dialog-container {
 		transform: none;
+	}
+
+	.menuPrincipal{
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
 	}
 
 </style>

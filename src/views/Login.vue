@@ -38,6 +38,9 @@
 </template>
 
 <script>
+
+import {mapMutations} from 'vuex'
+
 export default {
     name:'Login',
 
@@ -50,14 +53,17 @@ export default {
 
     methods: {
         
+        ...mapMutations(['setUsuario']),
+        
         onEntrar(){
             let usuario = {
                 id: 1,
-                nome: this.usuario,
-                senha: this.senha
+                nome: this.usuario                
             }
             
             localStorage.setItem('usuario', JSON.stringify(usuario));
+
+            this.setUsuario(usuario)
 
             this.$router.replace('/')
         }

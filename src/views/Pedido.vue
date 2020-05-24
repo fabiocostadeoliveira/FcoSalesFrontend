@@ -306,6 +306,8 @@ export default {
 
                 let payload = this.retornaDadosParaSalvar()
 
+                payload = { ...{usuario:this.usuario}, ...payload}
+
                 let response = null
 
                 if (this.acao === ACAO_INSERIR_PEDIDO){
@@ -456,7 +458,7 @@ export default {
 
     computed:{
 
-        ...mapGetters(['acao']),
+        ...mapGetters(['acao','usuario']),
         
         filtroClientes(){
             return this.listaClientes.map(converteClienteParaSeletor)

@@ -14,7 +14,9 @@ export default new Vuex.Store({
 
         acao: null,
 
-        listaPedidosHome: []
+        listaPedidosHome: [],
+
+        usuario:{}
     },
 
 
@@ -34,7 +36,12 @@ export default new Vuex.Store({
 
         setListaPedidosHome(state, payload){
             state.listaPedidosHome = payload
+        },
+
+        setUsuario(state, payload){
+            state.usuario = payload
         }
+
     },
 
     getters: {
@@ -45,7 +52,9 @@ export default new Vuex.Store({
 
         acao: state => state.acao,
 
-        listaPedidosHome: state => state.listaPedidosHome
+        listaPedidosHome: state => state.listaPedidosHome,
+
+        usuario: state => state.usuario
     },
 
     actions: {
