@@ -31,11 +31,12 @@
 <script>
 
 
+import Login from '../src/views/Login'
 import {mapGetters, mapMutations} from 'vuex'
 export default {
 	name: 'App',
 	components: {
-		
+		Login
 	},
 
 	data: () => ({
@@ -45,11 +46,29 @@ export default {
 			position: 'center',
 			duration: 10000
 		},
+		usuarioConectado:null
 
 	}),
 
 	methods:{
 		...mapMutations(['setSnackbarVisible']),
+
+		iniciarApp(){
+
+			let usuarioStorage = localStorage.getItem('usuario') || null
+
+			let usuarioJson = null
+
+			if (usuarioStorage != null )
+				usuarioJson = JSON.parse(usuarioStorage) || null
+
+			
+			if(usuarioJson === null){
+				this.$router.replace('/login').catch( err => {})
+			}
+
+			this.usuarioConectado = {id:usuarioJson.id, nome: usuarioJson.nome}
+		}
 	},
 
 	computed:{
@@ -66,6 +85,12 @@ export default {
 			this.isSnackbarVisibleLocal = newValue
 		}
 	},		
+
+
+	mounted(){
+
+		this.iniciarApp()
+	}
 }
 </script>
 
