@@ -66,7 +66,7 @@ export default new Vuex.Store({
 
         carregaListaPedidosHome( { commit } ){
             
-            axios.get('/pedidos').then( (response) => {
+            axios.get('/pedidos/orderByDateDesc').then( (response) => {
                 
                 let dados = response.data || []
 

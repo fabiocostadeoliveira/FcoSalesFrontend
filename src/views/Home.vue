@@ -84,7 +84,7 @@ const pesquisaPedidos = (items, term) => {
     return items
 }
 
-import {ACAO_INSERIR_PEDIDO, ACAO_EDITAR_PEDIDO} from '../constants/acoes'
+import {ACAO_INSERIR_PEDIDO, ACAO_EDITAR_PEDIDO, ACAO_CONSULTA_PEDIDO} from '../constants/acoes'
 import {mapGetters, mapActions, mapMutations} from 'vuex'
 
 export default {
@@ -183,7 +183,7 @@ export default {
             
             let pedidoEdt = this.listaPedidosHome.find( (p) => p.id == item.id )
 
-             this.setAcao(ACAO_EDITAR_PEDIDO)
+            this.setAcao(ACAO_EDITAR_PEDIDO)
 
             this.$router.push({ name: 'Pedido', params: {pedido: pedidoEdt} })
         },

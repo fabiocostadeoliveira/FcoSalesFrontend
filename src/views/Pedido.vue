@@ -29,7 +29,7 @@
             
             <div class="md-layout-item md-size-20">
                 <md-autocomplete 
-                    :disabled="desativado"
+                    :disabled="somenteConsulta"
                     v-model="clienteSelecionado"                  
                     :md-options="filtroClientes">
 
@@ -68,7 +68,7 @@
                 <md-field>
                     <label>Telefone</label>
                     <md-input 
-                        :disabled="desativado"
+                        :disabled="somenteConsulta"
                         v-model="pedidoLocal.cliente.telefone"
                         >
                     </md-input>
@@ -84,7 +84,7 @@
                 <md-field>
                     <label>Email</label>
                     <md-input
-                        :disabled="desativado" 
+                        :disabled="somenteConsulta" 
                         v-model="pedidoLocal.cliente.email">
                     </md-input>
                 </md-field>
@@ -93,13 +93,15 @@
         </div>
 
         <div class="md-alignment-right-space-around">
-            <md-button 
+            <md-button
+                v-if="!somenteConsulta"  
                 class="md-button"
                 @click="onAdicionarProduto">
                 <h2>Adicionar Produto</h2>
             </md-button>
 
-            <md-button 
+            <md-button
+                v-if="!somenteConsulta" 
                 class="md-button md-accent"
                 @click="onGravar">
                 <h2>Gravar</h2>
@@ -112,6 +114,7 @@
             </md-button>
 
             <md-button 
+                v-if="!somenteConsulta" 
                 class="md-button md-accent"
                 @click="onFinalizar">
                 <h2>Finalizar</h2>
@@ -133,7 +136,9 @@
                 <md-table-cell md-label="Preço" md-sort-by="preco">{{ item.produto.preco | monetario }}</md-table-cell>
                 <md-table-cell md-label="Total" md-sort-by="total">{{ item.total | monetario }}</md-table-cell>
                 
-                <md-table-cell md-label="" >
+                <md-table-cell 
+                    v-if="!somenteConsulta" 
+                    md-label="" >
                     <div class="actionsButtons">
                         <md-button 
                             class="md-icon-button md-accent"       
@@ -455,6 +460,12 @@ export default {
         
         filtroClientes(){
             return this.listaClientes.map(converteClienteParaSeletor)
+        },
+
+        somenteConsulta(){
+            if(this.pedidoLocal.finalizado)
+                return true
+            return false
         }
 
     },
