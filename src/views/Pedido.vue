@@ -480,7 +480,7 @@ export default {
 
                 qtdItens += parseFloat(i.quantidade.toString())
 
-                totalPedido += i.total
+                totalPedido += parseFloat(i.total.toString())
             })
 
             let obj = this.novoResumo(this.usuario.nome,situacao, qtdProdutos, qtdItens, totalPedido)
