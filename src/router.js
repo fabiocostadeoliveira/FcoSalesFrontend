@@ -4,6 +4,7 @@ import {BASE_URL_FRONTEND} from '../src/constants/urlsBase'
 import Home from './views/Home.vue'
 import Pedido from '../src/views/Pedido'
 import Login from '../src/views/Login'
+import Cliente from '../src/views/Cliente'
 
 Vue.use(Router)
 
@@ -30,6 +31,12 @@ export default new Router({
 			component: Pedido,
 			props: true,
 			activeClass: 'active'
+		},
+
+		{
+			path: '/Cliente',
+			name: 'Cliente',
+			component: Cliente
 		},
 	]
 

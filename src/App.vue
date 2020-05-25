@@ -1,17 +1,26 @@
 <template>
-	<div id="app">
+	<div id="app" class="page-container ">
 		
 		<md-toolbar id="menuBar" class="md-primary">
 			
 			<div class="menuPrincipal">
-				
-				<div class="">
-					<span id="labelProjectManager" class="md-title">Gerenciador de Vendas</span>  					
+
+				<div>
+					<md-button class="md-icon-button" @click="showNavigation = true">
+						<md-icon>menu</md-icon>
+					</md-button>
+
 					<md-button 
 						class="md-icon-button" 
 						to="/">
 						<md-icon id="iconHome">home</md-icon>
 					</md-button>
+
+				</div>
+				
+				<div class="">
+					<span id="labelProjectManager" class="md-title">Gerenciador de Vendas</span>  					
+					
 				</div>
 
 				<div>
@@ -25,8 +34,31 @@
 					</md-button>
 				</div>
 			</div> 
-
 		</md-toolbar>
+
+			
+		<md-drawer :md-active.sync="showNavigation" md-swipeable>
+			<md-toolbar class="md-transparent" md-elevation="0">
+				<span class="md-title">Fco Sales</span>
+			</md-toolbar>
+
+			<md-list>
+				<md-list-item
+					to="/Cliente">
+					<md-icon>move_to_inbox</md-icon>
+					<span class="md-list-item-text">Clientes</span>
+				</md-list-item>
+
+				<md-list-item
+					to="/">
+					<md-icon>move_to_inbox</md-icon>
+					<span class="md-list-item-text">Pedidos</span>
+				</md-list-item>
+
+			</md-list>
+		</md-drawer>
+
+
 
 		<md-snackbar 
 			:md-position="snackBarConfiguration.position" 
@@ -63,7 +95,8 @@ export default {
 			duration: 10000
 		},
 		usuarioConectado:null,
-		estaLogado: false
+		estaLogado: false,
+		showNavigation: false
 	}),
 
 	methods:{

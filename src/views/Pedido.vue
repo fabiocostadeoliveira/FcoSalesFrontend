@@ -335,11 +335,10 @@ export default {
 
                 this.sucessoAoGravar = true
             } catch (error) {
-                
-                //TODO - deixar tramento de msg abaixo generico
-                let defaultMessage = error?.response?.data?.errors[0]?.defaultMessage || ''
-                
-                this.showSnackBar('Erro ao salvar pedido' + (defaultMessage != '' ? ': ' + defaultMessage : '.') )
+
+                let detalhesErro = 'Detalhes: ' + error.response.data.msg 
+
+                this.showSnackBar('Erro ao salvar pedido - ' + detalhesErro)
             }
         },
 
