@@ -20,9 +20,13 @@
             <md-table-row slot="md-table-row" slot-scope="{ item }">
                 <md-table-cell md-label="Numero" md-sort-by="id">{{ item.id }}</md-table-cell>
                 <md-table-cell md-label="Data" md-sort-by="data">{{ item.data }}</md-table-cell>
-                <md-table-cell md-label="Situação" md-sort-by="situacao">{{ item.finalizado }}</md-table-cell>
+                <md-table-cell md-label="Situação" md-sort-by="situacao">{{ item.finalizado | situacaoPedido }}</md-table-cell>
                 <md-table-cell md-label="Razão Social" md-sort-by="razao_social">{{ item.cliente.nome  }}</md-table-cell>
                 <md-table-cell md-label="CNPJ" md-sort-by="cnpj">{{ item.cliente.cnpj  }}</md-table-cell>
+                <md-table-cell md-label="Qtd.Prod." md-sort-by="qtdProdutos">{{ item.resumo.qtdProdutos  }}</md-table-cell>
+                <md-table-cell md-label="Tot.Itens" md-sort-by="qtdItens">{{ item.resumo.qtdItens  }}</md-table-cell>
+                <md-table-cell md-label="Tot.Pedido" md-sort-by="totalPedido">{{ item.resumo.totalPedido | monetario  }}</md-table-cell>
+
                 
                 <md-table-cell md-label="Ações" >
                     <div class="actionsButtons">

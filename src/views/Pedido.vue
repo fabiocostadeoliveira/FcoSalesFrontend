@@ -3,9 +3,9 @@
 
         <div class="md-layout md-gutter">
 
-            <div class="md-layout-item md-size-15">
+            <div class="md-layout-item md-size-10">
                 <md-field>
-                    <label>Numero do Pedido</label>
+                    <label>Pedido</label>
                     <md-input 
                         disabled
                         v-model="pedidoLocal.id">
@@ -22,11 +22,7 @@
                     </md-input>
                 </md-field>
             </div>
-        </div>
 
-
-        <div class="md-layout md-gutter">
-            
             <div class="md-layout-item md-size-20">
                 <md-autocomplete 
                     :disabled="somenteConsulta"
@@ -52,8 +48,8 @@
                     </md-input>
                 </md-field>
             </div>
-            
-            <div class="md-layout-item md-size-40">
+
+            <div class="md-layout-item md-size-20">
                 <md-field>
                     <label>Razão Social</label>
                     <md-input
@@ -63,8 +59,8 @@
                     </md-input>
                 </md-field>
             </div>
-            
-            <div class="md-layout-item md-size-20">
+
+            <div class="md-layout-item md-size-15">
                 <md-field>
                     <label>Telefone</label>
                     <md-input 
@@ -79,8 +75,14 @@
 
 
         <div class="md-layout md-gutter">
+            
 
-            <div class="md-layout-item md-size-50">
+        </div>
+
+
+        <div class="md-layout md-gutter">
+
+            <div class="md-layout-item md-size-40">
                 <md-field>
                     <label>Email</label>
                     <md-input
@@ -89,6 +91,9 @@
                     </md-input>
                 </md-field>
             </div>
+
+            <ResumoPedido
+                :data="resumoPedido"/>
 
         </div>
 
@@ -203,6 +208,7 @@ const converteClienteParaSeletor = (c) =>{
 }
 
 import ItemPedidoModal from '../components/ItemPedidoModal'
+import ResumoPedido from '../components/ResumoPedido'
 import {dateUtil} from '../mixins/DateUtils'
 import {mapGetters, mapMutations, mapActions} from 'vuex'
 import {ACAO_INSERIR_PEDIDO, 
@@ -215,7 +221,8 @@ export default {
     name: 'Pedido',
     mixins: [dateUtil],
     components: {
-        ItemPedidoModal
+        ItemPedidoModal,
+        ResumoPedido
     },
     data: () => ({
         showModalItemPedido:false,
@@ -235,7 +242,8 @@ export default {
         sucessoAoGravar:false,
         itemParaEdicao:null,
         mostraModalEditarItem:null,
-        acaoItem:null
+        acaoItem:null,
+        resumoPedido:{}
     }),
 
     props:{
@@ -432,6 +440,8 @@ export default {
             let indice = this.findIndiceItemNaLista(this.itemParaEdicao, this.listaItens)
 
             this.listaItens[indice] = {... this.item}
+
+            this.atualizaResumo()
         },
 
         findIndiceItemNaLista(elemento, arr){
@@ -454,6 +464,41 @@ export default {
                     el1.preco == el2.preco &&
                     el1.total == el2.total
         },
+
+        atualizaResumo(){
+
+            let qtdProdutos = 0
+
+            let qtdItens = 0
+
+            let totalPedido = 0
+
+            let situacao = this.pedido.finalizado || false
+
+            this.listaItens.forEach( (i) => {
+
+                qtdProdutos += 1
+
+                qtdItens += i.quantidade
+
+                totalPedido += i.total
+            })
+
+            let obj = this.novoResumo(this.usuario.nome,situacao, qtdProdutos, qtdItens, totalPedido)
+
+            this.resumoPedido = obj
+
+        },
+
+        novoResumo(nomeUsuario, situacao, qtdProdutos, qtdItens, totalPedido){
+            return {
+                nomeUsuario,
+                situacao,
+                qtdProdutos,
+                qtdItens,
+                totalPedido
+            }
+        }
     },
 
     computed:{
@@ -479,6 +524,8 @@ export default {
             if(this.listaItens !== null ){
                 this.listaDePesquisa = this.listaItens
             }
+
+            this.atualizaResumo()
         },
         
         clienteSelecionado(){
@@ -504,6 +551,13 @@ export default {
 
     },
 
+
+    mounted(){
+
+        this.atualizaResumo()
+    },
+    
+    
     async beforeMount(){
         if( this.acao === null || this.acao === undefined )
             this.voltarParaHome()

@@ -99,13 +99,15 @@ export default {
                 
                 let {data} = await this.$http.post('/usuarios', payload)
 
-                this.redirecionaParaHome(data)
+                data = { ...data, ...{senha:this.senha}}
 
-                let usr = this.autenticar(data.login, data.senha)
+                let usr = await this.autenticar(data.login, data.senha)
 
                 if (usr === null){
                     throw  'Ocorreu algum erro no processo de cadastro/login'
                 }
+
+                this.loginApp(usr)  
 
             } catch (error) {
                 
@@ -129,6 +131,7 @@ export default {
                 
                 let {data} = await this.$http.get('/usuarios/autenticate', queryParams)
 
+                console.log('retorno da autenticacao',data)
                 return data
             } catch (error) {
 
@@ -149,9 +152,9 @@ export default {
                 return 
             }
 
-            localStorage.setItem('usuario', JSON.stringify(obj));
+            localStorage.setItem('usuario', JSON.stringify(usrAutenticado));
 
-            this.setUsuario(obj)
+            this.setUsuario(usrAutenticado)
 
             this.redirecionaParaHome()
         },

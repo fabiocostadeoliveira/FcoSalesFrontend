@@ -38,6 +38,15 @@ Vue.filter('monetario', function (valor) {
     return formatter.format(valor);
 })
 
+Vue.filter('situacaoPedido', function (valor) {
+
+    if (typeof valor !== "boolean") {
+        return valor;
+    }
+    
+    return valor ? 'Finalizado': 'Aberto'
+})
+
 new Vue({
   router,
   store,

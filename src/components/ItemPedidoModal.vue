@@ -232,26 +232,6 @@ export default {
 
     },
 
-    filters:{
-
-        /*
-        monetario(valor){
-
-            if (typeof valor !== "number") {
-                return valor;
-            }
-            
-            let formatter = new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-                minimumFractionDigits: 2
-            });
-            
-            return formatter.format(valor);
-        }
-        */
-    },
-
     async mounted(){
 
         await this.carregaProdutos()
@@ -271,10 +251,6 @@ export default {
         flex-direction: row;        
         align-items: center;
     }
-
-    // .md-theme-default.md-dialog-fullscreen.md-dialog-container{
-    //     transform: none; 
-    // }
 
     .color {
         width: 16px;
