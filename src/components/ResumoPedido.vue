@@ -24,40 +24,6 @@
             </div>
 
         </div>
-        
-        
-        <!-- <md-card md-with-hover>
-            <md-ripple>
-                <md-card-header>
-                    <h5>Resumo do Pedido</h5>
-                </md-card-header>
-
-                <md-card-content>
-                    <div>
-                        <span>Usuario</span>
-                    </div>
-
-                    <div>
-                        <span>Situação</span>
-                    </div>
-
-                    <div>
-                        <span>Quantidade de Produtos</span>
-                    </div>
-
-                    <div>
-                        <span>Quantidade de Itens</span>
-                    </div>
-
-                    <div>
-                        <span>Total do Pedido</span>
-                    </div>
-                
-                </md-card-content>
-
-            </md-ripple>
-        </md-card> -->
-
     </div>
 </template>
 

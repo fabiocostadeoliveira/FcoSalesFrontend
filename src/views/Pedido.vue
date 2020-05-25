@@ -478,7 +478,7 @@ export default {
 
                 qtdProdutos += 1
 
-                qtdItens += i.quantidade
+                qtdItens += parseFloat(i.quantidade.toString())
 
                 totalPedido += i.total
             })
