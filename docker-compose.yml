@@ -1,0 +1,13 @@
+version: '3.4'
+
+services:
+    api:
+        image: fabiocoliveira/fco-sales-backend:0.0.1
+        ports:
+            - 8080:8080
+    web:
+        image: fabiocoliveira/fco-sales-frontend:0.0.1
+        ports:
+            - 8081:8081
+        depends_on:
+            - api
